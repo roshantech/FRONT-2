@@ -1,5 +1,6 @@
 import { Navigate, useRoutes } from 'react-router-dom';
 // auth
+import Register from 'src/sections/auth/Register';
 import AuthGuard from '../auth/AuthGuard';
 import GuestGuard from '../auth/GuestGuard';
 // layouts
@@ -27,14 +28,36 @@ export default function Router() {
       path: '/',
       children: [
         { element: <Navigate to={PATH_AFTER_LOGIN} replace />, index: true },
-        {
-          path: 'login',
-          element: (
-            <GuestGuard>
-              <LoginPage />
-            </GuestGuard>
-          ),
-        },
+        {path: 'login',
+              element: (
+                <GuestGuard>
+                  <LoginPage />
+                </GuestGuard>
+              ),},
+            {path: 'register',
+              element: (
+                <GuestGuard>
+                  <Register />
+                </GuestGuard>
+              ),}
+        // {
+        //   path: 'auth',
+        //   children: [
+        //     {path: 'login',
+        //       element: (
+        //         <GuestGuard>
+        //           <LoginPage />
+        //         </GuestGuard>
+        //       ),},
+        //     {path: 'register',
+        //       element: (
+        //         <GuestGuard>
+        //           <Register />
+        //         </GuestGuard>
+        //       ),}
+        //   ]
+
+        // },
       ],
     },
     {

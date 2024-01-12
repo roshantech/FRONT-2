@@ -63,7 +63,7 @@ const reducer = (state: AuthStateType, action: ActionsType) => {
   if (action.type === Types.REGISTER) {
     return {
       ...state,
-      isAuthenticated: true,
+      isAuthenticated: false,
       user: action.payload.user,
     };
   }
@@ -99,9 +99,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (accessToken && isValidToken(accessToken)) {
         setSession(accessToken);
 
-        const response = await axios.get('/api/account/my-account');
+        // const response = await axios.get('/core/login');
 
-        const { user } = response.data;
+        const user = storageAvailable ? JSON.parse(localStorage.getItem('user') || '') : null;
 
         dispatch({
           type: Types.INITIAL,
@@ -136,13 +136,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [initialize]);
 
   // LOGIN
-  const login = useCallback(async (email: string, password: string) => {
-    const response = await axios.post('/api/account/login', {
-      email,
+  const login = useCallback(async (username: string, password: string) => {
+    const response = await axios.post('/core/login', {
+      username,
       password,
     });
-    const { accessToken, user } = response.data;
-
+    const { accessToken,refreshToken, user } = response.data;
+    localStorage.setItem('user', JSON.stringify({ ...user }));
     setSession(accessToken);
 
     dispatch({
@@ -155,13 +155,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // REGISTER
   const register = useCallback(
-    async (email: string, password: string, firstName: string, lastName: string) => {
-      const response = await axios.post('/api/account/register', {
-        email,
-        password,
-        firstName,
-        lastName,
-      });
+    async (payload : FormData) => {
+      const response = await axios.post('/core/signup', payload);
       const { accessToken, user } = response.data;
 
       localStorage.setItem('accessToken', accessToken);

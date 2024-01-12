@@ -7,9 +7,13 @@ function path(root: string, sublink: string) {
 const ROOTS_DASHBOARD = '/dashboard';
 
 // ----------------------------------------------------------------------
+const ROOTS_AUTH = '/auth';
 
 export const PATH_AUTH = {
+  root: ROOTS_AUTH,
   login: '/login',
+  register:'/register',
+
 };
 
 export const PATH_DASHBOARD = {
