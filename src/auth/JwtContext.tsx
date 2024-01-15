@@ -98,11 +98,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (accessToken && isValidToken(accessToken)) {
         setSession(accessToken);
+        const response = await axios.get('/v1/core/getLoggedInUser');
 
-        // const response = await axios.get('/core/login');
-
-        const user = storageAvailable ? JSON.parse(localStorage.getItem('user') || '') : null;
-
+        const  user  = response.data;
         dispatch({
           type: Types.INITIAL,
           payload: {
@@ -185,6 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isAuthenticated: state.isAuthenticated,
       user: state.user,
       method: 'jwt',
+      initialize,
       login,
       loginWithGoogle: () => {},
       loginWithGithub: () => {},
@@ -192,7 +191,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       register,
       logout,
     }),
-    [state.isAuthenticated, state.isInitialized, state.user, login, logout, register]
+    [state.isAuthenticated, state.isInitialized, state.user, login, logout, register,initialize]
   );
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;

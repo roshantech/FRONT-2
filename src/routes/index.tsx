@@ -1,6 +1,9 @@
 import { Navigate, useRoutes } from 'react-router-dom';
 // auth
 import Register from 'src/sections/auth/Register';
+import FileManagerPage from 'src/pages/FileManagerPage';
+import ChatPage from 'src/pages/ChatPage';
+import UserProfilePage from 'src/pages/UserProfilePage';
 import AuthGuard from '../auth/AuthGuard';
 import GuestGuard from '../auth/GuestGuard';
 // layouts
@@ -40,24 +43,7 @@ export default function Router() {
                   <Register />
                 </GuestGuard>
               ),}
-        // {
-        //   path: 'auth',
-        //   children: [
-        //     {path: 'login',
-        //       element: (
-        //         <GuestGuard>
-        //           <LoginPage />
-        //         </GuestGuard>
-        //       ),},
-        //     {path: 'register',
-        //       element: (
-        //         <GuestGuard>
-        //           <Register />
-        //         </GuestGuard>
-        //       ),}
-        //   ]
-
-        // },
+       
       ],
     },
     {
@@ -70,8 +56,18 @@ export default function Router() {
       children: [
         { element: <Navigate to={PATH_AFTER_LOGIN} replace />, index: true },
         { path: 'one', element: <PageOne /> },
-        { path: 'two', element: <PageTwo /> },
+        { path: 'userprofile', element: <UserProfilePage /> },
+
+        { path: 'filemanager', element: <FileManagerPage /> },
         { path: 'three', element: <PageThree /> },
+        {
+          path: 'chat',
+          children: [
+            { element: <ChatPage />, index: true },
+            { path: 'new', element: <ChatPage /> },
+            { path: ':conversationKey', element: <ChatPage /> },
+          ],
+        },
         {
           path: 'user',
           children: [

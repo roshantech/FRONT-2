@@ -1,5 +1,6 @@
 // @mui
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from 'src/utils/axios';
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
@@ -38,6 +39,7 @@ export default function NavAccount() {
     }
   },[enqueueSnackbar,user])
 
+  const navigate = useNavigate();
 
   const handleFileOpen = (loc: any) => {
     axiosInstance
@@ -54,10 +56,10 @@ export default function NavAccount() {
       });
   };
   return (
-    <StyledRoot>
+    <StyledRoot onClick={() => {navigate('userprofile')}}>
       <CustomAvatar src={profilepic} alt={user?.username} name={user?.username} />
 
-      <Box sx={{ ml: 2, minWidth: 0 }}>
+      <Box sx={{ ml: 2, minWidth: 0 }} >
         <Typography variant="subtitle2" noWrap>
           {user?.username}
         </Typography>

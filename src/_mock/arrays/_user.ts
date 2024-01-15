@@ -15,6 +15,7 @@ export const _userAbout = {
   email: _mock.email(1),
   company: _mock.company(1),
   school: _mock.company(2),
+  phone : _mock.phoneNumber(1),
   socialLinks: {
     facebookLink: `https://www.facebook.com/caitlyn.kerluke`,
     instagramLink: `https://www.instagram.com/caitlyn.kerluke`,
