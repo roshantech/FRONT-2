@@ -1,5 +1,6 @@
 // @mui
 import { useEffect, useState } from 'react';
+import { HOST_API_KEY } from 'src/config-global';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from 'src/utils/axios';
 import { styled, alpha } from '@mui/material/styles';
@@ -24,40 +25,14 @@ const StyledRoot = styled('div')(({ theme }) => ({
 
 export default function NavAccount() {
   const { user } = useAuthContext();
-  const [profilepic, setProfilePic] = useState<string>("");
-  const { enqueueSnackbar } = useSnackbar();
 
-  useEffect(() => {
-    try {
-      if (user){
-        console.log(user)
-        handleFileOpen(user.ProfilePic)
-      }
-    } catch (error) {
-      console.error(error);
-      enqueueSnackbar('Unable to logout', { variant: 'error' });
-    }
-  },[enqueueSnackbar,user])
-
+ 
   const navigate = useNavigate();
 
-  const handleFileOpen = (loc: any) => {
-    axiosInstance
-      .get(`/v1/core/getProfilePic?loc=${loc}`, {
-        responseType: 'blob',
-      })
-      .then((response) => {
-        const blob = response.data;
-        const objectUrl = URL.createObjectURL(blob);
-        setProfilePic(objectUrl)
-      })
-      .catch((error) => {
-        console.error('Error fetching getJobFile:', error);
-      });
-  };
+  
   return (
     <StyledRoot onClick={() => {navigate('userprofile')}}>
-      <CustomAvatar src={profilepic} alt={user?.username} name={user?.username} />
+      {user && <CustomAvatar src={`${HOST_API_KEY }/${  user.ProfilePic}`} alt={user?.username} name={user?.username} />}
 
       <Box sx={{ ml: 2, minWidth: 0 }} >
         <Typography variant="subtitle2" noWrap>

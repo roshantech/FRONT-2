@@ -41,7 +41,7 @@ export default function UserProfilePage() {
       value: 'profile',
       label: 'Profile',
       icon: <Iconify icon="ic:round-account-box" />,
-      component: <Profile info={_userAbout} posts={_userFeeds} />,
+      component: <Profile info={_userAbout} />,
     },
     {
       value: 'followers',

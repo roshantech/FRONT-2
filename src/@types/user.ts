@@ -34,6 +34,34 @@ export type IUserProfile = IUserProfileFollowers &
     socialLinks: IUserSocialLink;
   };
 
+export  interface Post {
+    ID: number;
+    userID: number;
+    caption: string;
+    media_url: string;
+    createdAt: string;
+    updatedAt: string;
+    comments: Comment[];
+    likes: Like[];
+  }
+  
+export  interface Comment {
+    ID: number;
+    postID: number;
+    userID: number;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+  
+export  interface Like {
+    ID: number;
+    postID: number;
+    userID: number;
+    createdAt: string;
+    updatedAt: string;
+  }
+
 export type IUserProfileFollower = {
   id: string;
   avatarUrl: string;

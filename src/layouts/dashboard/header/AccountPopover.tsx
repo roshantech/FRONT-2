@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { HOST_API_KEY } from 'src/config-global';
 // @mui
 import { alpha } from '@mui/material/styles';
 import { Box, Divider, Typography, Stack, MenuItem } from '@mui/material';
@@ -45,39 +46,10 @@ export default function AccountPopover() {
   const handleOpenPopover = (event: React.MouseEvent<HTMLElement>) => {
     setOpenPopover(event.currentTarget);
   };
-  const [profilepic, setProfilePic] = useState<string>("");
-
-  useEffect(() => {
-    try {
-      if (user){
-        console.log(user)
-        handleFileOpen(user.ProfilePic)
-      }
-    } catch (error) {
-      console.error(error);
-      enqueueSnackbar('Unable to logout', { variant: 'error' });
-    }
-  },[enqueueSnackbar,user])
-
-
-  const handleFileOpen = (loc: any) => {
-    axiosInstance
-      .get(`/v1/core/getProfilePic?loc=${loc}`, {
-        responseType: 'blob',
-      })
-      .then((response) => {
-        const blob = response.data;
-        const objectUrl = URL.createObjectURL(blob);
-        setProfilePic(objectUrl)
-      })
-      .catch((error) => {
-        console.error('Error fetching getJobFile:', error);
-      });
-  };
   const handleClosePopover = () => {
     setOpenPopover(null);
   };
-
+  // eslint-disable-next-line no-unsafe-optional-chaining
   const handleLogout = async () => {
     try {
       logout();
@@ -113,7 +85,7 @@ export default function AccountPopover() {
           }),
         }}
       >
-        <CustomAvatar src={profilepic} alt={user?.username} name={user?.username} />
+       {user && <CustomAvatar src={`${HOST_API_KEY}/${ user.ProfilePic}`} alt={user?.username} name={user?.username} />}
       </IconButtonAnimate>
 
       <MenuPopover open={openPopover} onClose={handleClosePopover} sx={{ width: 200, p: 0 }}>

@@ -1,6 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { HOST_API_KEY } from 'src/config-global';
+import axiosInstance from 'src/utils/axios';
 // @mui
 import { alpha } from '@mui/material/styles';
+import ReactPlayer from 'react-player';
 import {
   Box,
   Link,
@@ -16,7 +19,7 @@ import {
   FormControlLabel,
 } from '@mui/material';
 // @types
-import { IUserProfilePost } from '../../../@types/user';
+import { IUserProfilePost, Post } from '../../../@types/user';
 // auth
 import { useAuthContext } from '../../../auth/useAuthContext';
 // utils
@@ -30,23 +33,25 @@ import { CustomAvatar, CustomAvatarGroup } from '../../../components/custom-avat
 // ----------------------------------------------------------------------
 
 interface Props {
-  post: IUserProfilePost;
+  post: Post;
 }
 
 export default function ProfilePostCard({ post }: Props) {
   const { user } = useAuthContext();
-
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [isLiked, setLiked] = useState(post.isLiked);
-
-  const [likes, setLikes] = useState(post.personLikes.length);
+  const [type, setType] = useState<'image' | 'video' | null>("video");
+  const [isLiked, setLiked] = useState(true);
+  
+  const [likes, setLikes] = useState(0);
 
   const [message, setMessage] = useState('');
 
-  const hasComments = post.comments.length > 0;
+  // const hasComments = post.comments.length > 0;
+
+
+
 
   const handleLike = () => {
     setLiked(true);
@@ -75,7 +80,25 @@ export default function ProfilePostCard({ post }: Props) {
       current.focus();
     }
   };
-
+  interface PostMediaProps {
+    typ: 'image' | 'video' | null;
+  }
+  
+  const PostMedia: React.FC<PostMediaProps> = ({ typ }) => {
+    let mediaComponent: JSX.Element | null = null;
+  
+    if (typ === 'image') {
+      mediaComponent = (
+        <Image alt="post media" src={ `${HOST_API_KEY}/${ post.media_url}`} ratio="16/9" sx={{ borderRadius: 1, mb: 2 }} />
+      );
+    } else if (typ === 'video') {
+      mediaComponent = (
+        <ReactPlayer url={`${HOST_API_KEY}/${ post.media_url}`}  controls width="100%" height="auto" style={{ marginBottom: 2 }} />
+      );
+    }
+  
+    return mediaComponent;
+  };
   return (
     <Card>
       <CardHeader
@@ -105,11 +128,11 @@ export default function ProfilePostCard({ post }: Props) {
           p: (theme) => theme.spacing(3, 3, 2, 3),
         }}
       >
-        {post.message}
+        {post.caption}
       </Typography>
 
       <Box sx={{ p: 1 }}>
-        <Image alt="post media" src={post.media} ratio="16/9" sx={{ borderRadius: 1 }} />
+          <PostMedia typ={type} />
       </Box>
 
       <Stack
@@ -132,11 +155,11 @@ export default function ProfilePostCard({ post }: Props) {
           label={fShortenNumber(likes)}
         />
 
-        <CustomAvatarGroup>
-          {post.personLikes.map((person) => (
+        {/* <CustomAvatarGroup>
+          {post.likes.map((person) => (
             <CustomAvatar key={person.name} alt={person.name} src={person.avatarUrl} />
           ))}
-        </CustomAvatarGroup>
+        </CustomAvatarGroup> */}
 
         <Box sx={{ flexGrow: 1 }} />
 
@@ -149,7 +172,7 @@ export default function ProfilePostCard({ post }: Props) {
         </IconButton>
       </Stack>
 
-      {hasComments && (
+      {/* {hasComments && (
         <Stack spacing={1.5} sx={{ px: 3, pb: 2 }}>
           {post.comments.map((comment) => (
             <Stack key={comment.id} direction="row" spacing={2}>
@@ -182,7 +205,7 @@ export default function ProfilePostCard({ post }: Props) {
             </Stack>
           ))}
         </Stack>
-      )}
+      )} */}
 
       <Stack
         spacing={2}

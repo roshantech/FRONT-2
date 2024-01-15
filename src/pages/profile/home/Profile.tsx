@@ -1,8 +1,11 @@
+import { useCallback, useEffect, useState } from 'react';
 // @mui
 import { Grid, Stack } from '@mui/material';
 import { useAuthContext } from 'src/auth/useAuthContext';
+import { useSnackbar } from 'src/components/snackbar';
+import axiosInstance from 'src/utils/axios';
 // @types
-import { IUserProfile, IUserProfilePost } from '../../../@types/user';
+import { IUserProfile, IUserProfilePost, Post } from '../../../@types/user';
 //
 import ProfileAbout from './ProfileAbout';
 import ProfilePostCard from './ProfilePostCard';
@@ -14,12 +17,33 @@ import ProfileSocialInfo from './ProfileSocialInfo';
 
 type Props = {
   info: IUserProfile;
-  posts: IUserProfilePost[];
 };
 
-export default function Profile({ info, posts }: Props) {
+export default function Profile({ info }: Props) {
   const { user } = useAuthContext();
-  console.log(user)
+  const { enqueueSnackbar } = useSnackbar();
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  const getAllUserPost = useCallback(() => {
+      axiosInstance
+      .get(`/v1/core/getPosts`)
+      .then((response) => {
+        setPosts(response.data as Post[])
+      })
+      .catch((error) => {
+        enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+      });
+  },[enqueueSnackbar]);
+
+  useEffect(() => {
+    try {
+        getAllUserPost()
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar('Unable to logout', { variant: 'error' });
+    }
+  },[enqueueSnackbar, getAllUserPost])
+
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} md={4}>
@@ -44,8 +68,8 @@ export default function Profile({ info, posts }: Props) {
         <Stack spacing={3}>
           <ProfilePostInput />
 
-          {posts.map((post) => (
-            <ProfilePostCard key={post.id} post={post} />
+          {posts.length >0 && posts.map((post) => (
+            <ProfilePostCard key={post.ID} post={post} />
           ))}
         </Stack>
       </Grid>
