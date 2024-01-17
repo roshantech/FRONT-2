@@ -36,9 +36,10 @@ export type IUserProfile = IUserProfileFollowers &
 
 export  interface Post {
     ID: number;
-    userID: number;
+    user_id: number;
     caption: string;
     media_url: string;
+    media_type: 'image' | 'video' | null;
     createdAt: string;
     updatedAt: string;
     comments: Comment[];

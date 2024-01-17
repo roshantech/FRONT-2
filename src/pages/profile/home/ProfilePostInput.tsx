@@ -19,20 +19,19 @@ export default function ProfilePostInput() {
   const [File, setFile] = useState<any>(null);
   const { enqueueSnackbar } = useSnackbar();
   const videoRef = useRef(null);
-
   const handleClickAttach = () => {
     fileInputRef.current?.click();
   };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-
+    console.log(selectedFile)
     if (selectedFile) {
       const isImage = selectedFile.type.startsWith('image/');
       const isVideo = selectedFile.type.startsWith('video/');
 
       if (isImage || isVideo) {
         setType(isImage ? 'image' : 'video');
+        
         setFile(selectedFile)
         setMediaLink(URL.createObjectURL(selectedFile));
       } else {
@@ -42,16 +41,20 @@ export default function ProfilePostInput() {
   };
 
   const onSubmit = () => {
-    console.log(File  , caption)
     try{
       if (caption === "") {
         enqueueSnackbar('Caption is Empty!', { variant: 'error' });
         return 
       }
       const data = new FormData();
+
       data.append("caption" , caption)
+      data.append("media_type" ,typ as string)
+
       if (File != null) {
         data.append("file" ,File)
+      }else if(File?.name.includes(" ")){
+        return ;
       }
 
       axiosInstance
@@ -60,6 +63,7 @@ export default function ProfilePostInput() {
         setFile(null)
         setMediaLink("")
         setCaption("")
+        setType(null)
         enqueueSnackbar(response.data);
       })
       .catch((error) => {
@@ -69,8 +73,6 @@ export default function ProfilePostInput() {
     }catch(error){
       enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
     }
-
-
   };
   interface PostMediaProps {
     type: 'image' | 'video' | null;

@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { HOST_API_KEY } from 'src/config-global';
 import axiosInstance from 'src/utils/axios';
 // @mui
+import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { alpha } from '@mui/material/styles';
+import { useSnackbar } from 'src/components/snackbar';
 import ReactPlayer from 'react-player';
 import {
   Box,
@@ -29,6 +31,7 @@ import { fShortenNumber } from '../../../utils/formatNumber';
 import Image from '../../../components/image';
 import Iconify from '../../../components/iconify';
 import { CustomAvatar, CustomAvatarGroup } from '../../../components/custom-avatar';
+import { useTheme } from '@mui/material/styles';
 
 // ----------------------------------------------------------------------
 
@@ -39,19 +42,43 @@ interface Props {
 export default function ProfilePostCard({ post }: Props) {
   const { user } = useAuthContext();
   const commentInputRef = useRef<HTMLInputElement>(null);
+  const theme = useTheme();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [type, setType] = useState<'image' | 'video' | null>("video");
+  const [type, setType] = useState<'image' | 'video' | null>(post.media_type);
   const [isLiked, setLiked] = useState(true);
   
-  const [likes, setLikes] = useState(0);
+  const [likes, setLikes] = useState(1);
 
   const [message, setMessage] = useState('');
 
   // const hasComments = post.comments.length > 0;
+  const { enqueueSnackbar } = useSnackbar();
+  const [postUser, setPostUser] = useState<any>();
+  const [showPicker, setShowPicker] = useState<boolean>(false);
 
+  
+  const GetPostUser = useCallback(() => {
+    try{
+      console.log(post)
+      axiosInstance
+      .get(`/v1/core/getUserByID?ID=${post.user_id}`)
+      .then((response) => {
+        setPostUser(response.data)        
+      })
+      .catch((error) => {
+        
+        enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+      });
+    }catch(error){
+      enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+    }
+  },[enqueueSnackbar,post]);
+  useEffect(() => {
+     GetPostUser()
+  },[GetPostUser])
 
-
+console.log(post)
 
   const handleLike = () => {
     setLiked(true);
@@ -99,16 +126,19 @@ export default function ProfilePostCard({ post }: Props) {
   
     return mediaComponent;
   };
+
+
+
   return (
     <Card>
       <CardHeader
         disableTypography
         avatar={
-          <CustomAvatar src={user?.photoURL} alt={user?.displayName} name={user?.displayName} />
+          <CustomAvatar src={`${HOST_API_KEY}/${ postUser?.ProfilePic}`} alt={postUser?.username} name={postUser?.username} />
         }
         title={
           <Link color="inherit" variant="subtitle2">
-            {user?.displayName}
+            {postUser?.username}
           </Link>
         }
         subheader={
@@ -215,7 +245,7 @@ export default function ProfilePostCard({ post }: Props) {
           p: (theme) => theme.spacing(0, 3, 3, 3),
         }}
       >
-        <CustomAvatar src={user?.photoURL} alt={user?.displayName} name={user?.displayName} />
+        <CustomAvatar src={`${HOST_API_KEY}/${ user?.ProfilePic}`} alt={user?.username} name={user?.username} />
 
         <InputBase
           fullWidth
@@ -225,13 +255,15 @@ export default function ProfilePostCard({ post }: Props) {
           onChange={(event) => handleChangeMessage(event.target.value)}
           endAdornment={
             <InputAdornment position="end" sx={{ mr: 1 }}>
+              {showPicker && (<EmojiPicker style={{bottom:250,left:70,position:"relative"}} /> )}
               <IconButton size="small" onClick={handleClickAttach}>
                 <Iconify icon="ic:round-add-photo-alternate" />
               </IconButton>
 
-              <IconButton size="small">
+              <IconButton size="small" onClick={() => {setShowPicker(!showPicker)}}>
                 <Iconify icon="eva:smiling-face-fill" />
               </IconButton>
+                
             </InputAdornment>
           }
           sx={{
