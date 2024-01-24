@@ -36,7 +36,7 @@ const CURRENT_USER_ID = '8864c717-587d-472a-929a-8e5f298024da-0';
 export default function Chat() {
    const { themeStretch } = useSettingsContext();
 
-   const dispatch = useDispatch();
+  //  const dispatch = useDispatch();
 
    const navigate = useNavigate();
 
@@ -48,23 +48,23 @@ export default function Chat() {
     (state) => state.chat
   );
 
-  // const selectedConversation = useSelector(() => {
-  //   if (activeConversationId) {
-  //     return conversations.byId[activeConversationId];
-  //   }
+  const selectedConversation = useSelector(() => {
+    if (activeConversationId) {
+      return conversations.byId[activeConversationId];
+    }
 
-  //   return {
-  //     id: '',
-  //     messages: [],
-  //     participants: [],
-  //     unreadCount: 0,
-  //     type: '',
-  //   };
-  // });
+    return {
+      id: '',
+      messages: [],
+      participants: [],
+      unreadCount: 0,
+      type: '',
+    };
+  });
 
    const detailView = !!conversationKey;
 
-  // const displayParticipants = participants.filter((item) => item.id !== CURRENT_USER_ID);
+  const displayParticipants = participants.filter((item) => item.id !== CURRENT_USER_ID);
 
   // useEffect(() => {
   //   dispatch(getConversations());
@@ -97,17 +97,17 @@ export default function Chat() {
   //   }
   // }, [dispatch, activeConversationId]);
 
-  // const handleAddRecipients = (selectedRecipients: IChatParticipant[]) => {
-  //   dispatch(addRecipients(selectedRecipients));
-  // };
+  const handleAddRecipients = (selectedRecipients: IChatParticipant[]) => {
+    // dispatch(addRecipients(selectedRecipients));
+  };
 
-  // const handleSendMessage = async (value: IChatSendMessage) => {
-  //   try {
-  //     dispatch(sendMessage(value));
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
+  const handleSendMessage = async (value: IChatSendMessage) => {
+    try {
+      // dispatch(sendMessage(value));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Container maxWidth={themeStretch ? false : 'xl'}>
@@ -116,7 +116,7 @@ export default function Chat() {
       <Card sx={{ height: '72vh', display: 'flex' }}>
         <ChatNav conversations={conversations} activeConversationId={activeConversationId} />
 
-        {/* <Stack flexGrow={1} sx={{ overflow: 'hidden' }}>
+        <Stack flexGrow={1} sx={{ overflow: 'hidden' }}>
           {detailView ? (
             <ChatHeaderDetail participants={displayParticipants} />
           ) : (
@@ -151,7 +151,7 @@ export default function Chat() {
               <ChatRoom conversation={selectedConversation} participants={displayParticipants} />
             )}
           </Stack>
-        </Stack> */}
+        </Stack>
       </Card>
     </Container>
   );

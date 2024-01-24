@@ -30,7 +30,6 @@ type Payload = {
     user: AuthUserType;
   };
   [Types.REGISTER]: {
-    user: AuthUserType;
   };
   [Types.LOGOUT]: undefined;
 };
@@ -64,7 +63,6 @@ const reducer = (state: AuthStateType, action: ActionsType) => {
     return {
       ...state,
       isAuthenticated: false,
-      user: action.payload.user,
     };
   }
   if (action.type === Types.LOGOUT) {
@@ -155,14 +153,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = useCallback(
     async (payload : FormData) => {
       const response = await axios.post('/core/signup', payload);
-      const { accessToken, user } = response.data;
-
-      localStorage.setItem('accessToken', accessToken);
+      
 
       dispatch({
         type: Types.REGISTER,
         payload: {
-          user,
         },
       });
     },

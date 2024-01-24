@@ -76,6 +76,7 @@ export default function AuthRegisterForm() {
         formDataObj.append('password', data.password);
         formDataObj.append('email', data.email);
         await register(formDataObj);
+        
       }
     } catch (error) {
       console.error(error);

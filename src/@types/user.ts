@@ -42,23 +42,27 @@ export  interface Post {
     media_type: 'image' | 'video' | null;
     createdAt: string;
     updatedAt: string;
-    comments: Comment[];
-    likes: Like[];
+    Comments: Comment[];
+    Likes: Like[];
   }
   
 export  interface Comment {
-    ID: number;
-    postID: number;
-    userID: number;
-    content: string;
-    createdAt: string;
-    updatedAt: string;
-  }
+  ID: number;
+  user_id: string;
+  username: string;
+  ProfilePic: string;
+  post_id: string;
+  message: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
   
+
+
 export  interface Like {
     ID: number;
-    postID: number;
-    userID: number;
+    post_id: number;
+    user_id: number;
     createdAt: string;
     updatedAt: string;
   }

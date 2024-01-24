@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { HOST_API_KEY } from 'src/config-global';
 import axiosInstance from 'src/utils/axios';
 // @mui
-import EmojiPicker, { Theme } from 'emoji-picker-react';
+import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { alpha } from '@mui/material/styles';
 import { useSnackbar } from 'src/components/snackbar';
 import ReactPlayer from 'react-player';
@@ -31,7 +31,6 @@ import { fShortenNumber } from '../../../utils/formatNumber';
 import Image from '../../../components/image';
 import Iconify from '../../../components/iconify';
 import { CustomAvatar, CustomAvatarGroup } from '../../../components/custom-avatar';
-import { useTheme } from '@mui/material/styles';
 
 // ----------------------------------------------------------------------
 
@@ -42,25 +41,23 @@ interface Props {
 export default function ProfilePostCard({ post }: Props) {
   const { user } = useAuthContext();
   const commentInputRef = useRef<HTMLInputElement>(null);
-  const theme = useTheme();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [type, setType] = useState<'image' | 'video' | null>(post.media_type);
-  const [isLiked, setLiked] = useState(true);
-  
-  const [likes, setLikes] = useState(1);
+
+  const [isLiked, setLiked] = useState(false);
+  const [likes, setLikes] = useState(post.Likes?.length );
 
   const [message, setMessage] = useState('');
 
-  // const hasComments = post.comments.length > 0;
+  const hasComments = post.Comments.length > 0;
   const { enqueueSnackbar } = useSnackbar();
   const [postUser, setPostUser] = useState<any>();
   const [showPicker, setShowPicker] = useState<boolean>(false);
-
+  console.log(post)
   
   const GetPostUser = useCallback(() => {
     try{
-      console.log(post)
       axiosInstance
       .get(`/v1/core/getUserByID?ID=${post.user_id}`)
       .then((response) => {
@@ -75,23 +72,68 @@ export default function ProfilePostCard({ post }: Props) {
     }
   },[enqueueSnackbar,post]);
   useEffect(() => {
+    post.Likes.forEach((like) => {
+      if(like.user_id === user?.ID) {
+        setLiked(true)     
+      }
+    })
      GetPostUser()
-  },[GetPostUser])
+  },[GetPostUser, post, user])
 
-console.log(post)
 
   const handleLike = () => {
-    setLiked(true);
-    setLikes((prevLikes) => prevLikes + 1);
+    axiosInstance
+      .get(`/v1/core/likePost?ID=${post.ID}`)
+      .then((response) => {
+        setLiked(true)     
+        setLikes((prevLikes) => prevLikes + 1);
+      }).catch((error) => {
+        enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+      });
+    
   };
 
   const handleUnlike = () => {
-    setLiked(false);
-    setLikes((prevLikes) => prevLikes - 1);
+    axiosInstance
+      .get(`/v1/core/likePost?ID=${post.ID}`)
+      .then((response) => {
+        setLiked(false)     
+        setLikes((prevLikes) => prevLikes - 1);
+      }).catch((error) => {
+        enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+      });
   };
 
+
+  const createComment = () => {
+    const data = new FormData();
+
+    data.append("post_id" , post.ID.toString() )
+    data.append("message" ,commentInputRef.current?.value as string)
+
+    axiosInstance
+    .post(`/v1/core/createPostComments` , data)
+    .then((response) => {
+      post.Comments.push({  ID: post.Comments.length ,
+        user_id: user?.ID,
+        username: user?.username,
+        ProfilePic: user?.ProfilePic,
+        post_id: post.ID.toString(),
+        message: commentInputRef.current?.value as string,
+        CreatedAt: new Date().toString(),
+        UpdatedAt: new Date().toString(),})
+
+      enqueueSnackbar('Sucessfully Commented!');
+
+    }).catch((error) => {
+      enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+    });
+  }
+
+
   const handleChangeMessage = (value: string) => {
-    setMessage(value);
+    // setMessage(value);
+    // commentInputRef.current?.s = value
   };
 
   const handleClickAttach = () => {
@@ -104,7 +146,7 @@ console.log(post)
   const handleClickComment = () => {
     const { current } = commentInputRef;
     if (current) {
-      current.focus();
+      // current.focus();
     }
   };
   interface PostMediaProps {
@@ -127,7 +169,10 @@ console.log(post)
     return mediaComponent;
   };
 
-
+  const handleEmojiSelect = (selectedEmoji:EmojiClickData ,e:any) => {
+    // setEmoji(selectedEmoji);
+    setMessage(message + selectedEmoji.emoji)
+  };
 
   return (
     <Card>
@@ -185,11 +230,6 @@ console.log(post)
           label={fShortenNumber(likes)}
         />
 
-        {/* <CustomAvatarGroup>
-          {post.likes.map((person) => (
-            <CustomAvatar key={person.name} alt={person.name} src={person.avatarUrl} />
-          ))}
-        </CustomAvatarGroup> */}
 
         <Box sx={{ flexGrow: 1 }} />
 
@@ -202,11 +242,11 @@ console.log(post)
         </IconButton>
       </Stack>
 
-      {/* {hasComments && (
+      {hasComments && (
         <Stack spacing={1.5} sx={{ px: 3, pb: 2 }}>
-          {post.comments.map((comment) => (
-            <Stack key={comment.id} direction="row" spacing={2}>
-              <CustomAvatar alt={comment.author.name} src={comment.author.avatarUrl} />
+          {post.Comments.map((comment) => (
+            <Stack key={comment.ID} direction="row" spacing={2}>
+              <CustomAvatar alt={comment.username} src={`${HOST_API_KEY}/${ comment?.ProfilePic}`} />
 
               <Paper
                 sx={{
@@ -221,10 +261,10 @@ console.log(post)
                   alignItems={{ sm: 'center' }}
                   sx={{ mb: 0.5 }}
                 >
-                  <Typography variant="subtitle2">{comment.author.name}</Typography>
+                  <Typography variant="subtitle2">{comment.username}</Typography>
 
                   <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-                    {fDate(comment.createdAt)}
+                    {fDate(comment.CreatedAt)}
                   </Typography>
                 </Stack>
 
@@ -235,7 +275,7 @@ console.log(post)
             </Stack>
           ))}
         </Stack>
-      )} */}
+      )}
 
       <Stack
         spacing={2}
@@ -249,19 +289,23 @@ console.log(post)
 
         <InputBase
           fullWidth
-          value={message}
+          // value={message}
           inputRef={commentInputRef}
           placeholder="Write a comment…"
           onChange={(event) => handleChangeMessage(event.target.value)}
           endAdornment={
             <InputAdornment position="end" sx={{ mr: 1 }}>
-              {showPicker && (<EmojiPicker style={{bottom:250,left:70,position:"relative"}} /> )}
+              {showPicker && (<EmojiPicker style={{bottom:250,left:70,position:"relative",zIndex:10}} theme={"dark" as Theme } lazyLoadEmojis onEmojiClick={handleEmojiSelect}/> )}
               <IconButton size="small" onClick={handleClickAttach}>
                 <Iconify icon="ic:round-add-photo-alternate" />
               </IconButton>
 
               <IconButton size="small" onClick={() => {setShowPicker(!showPicker)}}>
                 <Iconify icon="eva:smiling-face-fill" />
+              </IconButton>
+
+              <IconButton size="small">
+                <Iconify icon="majesticons:send"  onClick={() => {createComment()}}/>
               </IconButton>
                 
             </InputAdornment>
