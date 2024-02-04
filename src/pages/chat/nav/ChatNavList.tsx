@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from 'src/auth/useAuthContext';
 // @mui
 import { List, SxProps } from '@mui/material';
 // routes
@@ -6,7 +7,7 @@ import { PATH_DASHBOARD } from '../../../routes/paths';
 // hooks
 import useResponsive from '../../../hooks/useResponsive';
 // @types
-import { IChatConversationsState } from '../../../@types/chat';
+import { IChatConversation, IChatConversationsState } from '../../../@types/chat';
 // components
 import { SkeletonConversationItem } from '../../../components/skeleton';
 //
@@ -14,13 +15,13 @@ import ChatNavItem from './ChatNavItem';
 
 // ----------------------------------------------------------------------
 
-const CURRENT_USER_ID = '8864c717-587d-472a-929a-8e5f298024da-0';
 
 type Props = {
-  conversations: IChatConversationsState;
+  conversations: IChatConversation[];
   openNav: boolean;
   onCloseNav: VoidFunction;
   selected: (conversationId: string) => boolean;
+  setCurrentConversation:(consersation: IChatConversation) => void,
   sx?: SxProps;
 };
 
@@ -29,23 +30,25 @@ export default function ChatNavList({
   openNav,
   onCloseNav,
   selected,
+  setCurrentConversation,
   sx,
   ...other
 }: Props) {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
 
   const isDesktop = useResponsive('up', 'md');
 
   const handleSelectConversation = (conversationId: string) => {
     let conversationKey = '';
 
-    const conversation = conversations.byId[conversationId];
+    const conversation =  conversations.find(conversatio => conversatio.ID.toString() === conversationId);
 
-    if (conversation.type === 'GROUP') {
-      conversationKey = conversation.id;
+    if (conversation?.Type === 'GROUP') {
+      conversationKey = conversation?.ID.toString();
     } else {
-      const otherParticipant = conversation.participants.find(
-        (participant) => participant.id !== CURRENT_USER_ID
+      const otherParticipant = conversation?.Participants.find(
+        (participant) => participant.ID.toString() !== user?.ID
       );
 
       if (otherParticipant?.username) {
@@ -56,22 +59,22 @@ export default function ChatNavList({
     navigate(PATH_DASHBOARD.chat.view(conversationKey));
   };
 
-  const loading = !conversations.allIds.length;
+  const loading = !conversations.length;
 
   return (
     <List disablePadding sx={sx} {...other}>
-      {(loading ? [...Array(12)] : conversations.allIds).map((conversationId, index) =>
-        conversationId ? (
+      {conversations.map((conversation, index) =>
+        conversation.ID ? (
           <ChatNavItem
-            key={conversationId}
+            key={conversation.ID}
             openNav={openNav}
-            conversation={conversations.byId[conversationId]}
-            isSelected={selected(conversationId)}
+            conversation={conversation}
+            isSelected={selected(conversation.ID.toString())}
             onSelect={() => {
               if (!isDesktop) {
                 onCloseNav();
               }
-              handleSelectConversation(conversationId);
+              setCurrentConversation(conversation);
             }}
           />
         ) : (

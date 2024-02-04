@@ -1,4 +1,8 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { HOST_API_KEY } from 'src/config-global';
+import { useAuthContext } from 'src/auth/useAuthContext';
+import axiosInstance from 'src/utils/axios';
+import { useSnackbar } from 'src/components/snackbar';
 // @mui
 import { Box, Card, Button, Avatar, Typography, Stack } from '@mui/material';
 // @types
@@ -12,7 +16,32 @@ type Props = {
   followers: IUserProfileFollower[];
 };
 
-export default function ProfileFollowers({ followers }: Props) {
+export default function ProfileFollowers() {
+  const { user } = useAuthContext();
+
+  const [followers, setFollowers] = useState<any[]>([]);
+  const { enqueueSnackbar } = useSnackbar();
+  const GetUserFollowers = useCallback(() => {
+    try{
+      axiosInstance
+      .get(`/v1/core/getAllUsers`)
+      .then((response) => {
+        setFollowers(response.data)
+        console.log(response.data)
+      })
+      .catch((error) => {
+        
+        enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+      });
+    }catch(error){
+      enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+
+  useEffect(() => {
+    GetUserFollowers()
+  },[GetUserFollowers])
   return (
     <>
       <Typography variant="h4" sx={{ my: 5 }}>
@@ -28,8 +57,8 @@ export default function ProfileFollowers({ followers }: Props) {
           md: 'repeat(3, 1fr)',
         }}
       >
-        {followers.map((follower) => (
-          <FollowerCard key={follower.id} follower={follower} />
+        {followers && followers.map((follower) => (
+          <FollowerCard key={follower.FollowerID} follower={follower}  user={user}/>
         ))}
       </Box>
     </>
@@ -39,13 +68,37 @@ export default function ProfileFollowers({ followers }: Props) {
 // ----------------------------------------------------------------------
 
 type FollowerCardProps = {
-  follower: IUserProfileFollower;
+  follower: any;
+  user:any;
 };
 
-function FollowerCard({ follower }: FollowerCardProps) {
-  const { name, country, avatarUrl, isFollowed } = follower;
+function FollowerCard({ follower ,user}: FollowerCardProps) {
+  const { username,ID, ProfilePic ,address} = follower;
+  console.log(user)
+  const [toggle, setToogle] = useState(false);
 
-  const [toggle, setToogle] = useState(isFollowed);
+  const { enqueueSnackbar } = useSnackbar();
+  // useEffect(() => {
+  //   if(user.follower.followerID === ID){
+  //     setToogle(true)
+  //   }
+  // }, [user.ID, ID])
+  const GetUserFollowers = () => {
+    try{
+      axiosInstance
+      .get(`/v1/core/addFollowerToUser?FID=${ID}`)
+      .then((response) => {
+        console.log(response.data)
+        setToogle(true)
+      })
+      .catch((error) => {
+        setToogle(false)
+        enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+      });
+    }catch(error){
+      enqueueSnackbar('Something Went Wrong!', { variant: 'error' });
+    }
+  }
 
   return (
     <Card
@@ -55,7 +108,7 @@ function FollowerCard({ follower }: FollowerCardProps) {
         alignItems: 'center',
       }}
     >
-      <Avatar alt={name} src={avatarUrl} sx={{ width: 48, height: 48 }} />
+      <Avatar alt={username} src={`${HOST_API_KEY}/${ ProfilePic}`} sx={{ width: 48, height: 48 }} />
 
       <Box
         sx={{
@@ -66,21 +119,21 @@ function FollowerCard({ follower }: FollowerCardProps) {
         }}
       >
         <Typography variant="subtitle2" noWrap>
-          {name}
+          {username}
         </Typography>
 
         <Stack spacing={0.5} direction="row" alignItems="center" sx={{ color: 'text.secondary' }}>
           <Iconify icon="eva:pin-fill" width={16} sx={{ flexShrink: 0 }} />
 
           <Typography variant="body2" component="span" noWrap>
-            {country}
+            {address.country}
           </Typography>
         </Stack>
       </Box>
 
       <Button
         size="small"
-        onClick={() => setToogle(!toggle)}
+        onClick={() => GetUserFollowers()}
         variant={toggle ? 'text' : 'outlined'}
         color={toggle ? 'primary' : 'inherit'}
         startIcon={toggle && <Iconify icon="eva:checkmark-fill" />}

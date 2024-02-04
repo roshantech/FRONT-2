@@ -1,5 +1,6 @@
 // @mui
 import { Box, ListItemText, ListItemAvatar, ListItemButton } from '@mui/material';
+import { HOST_API_KEY } from 'src/config-global';
 // @types
 import { IChatParticipant } from '../../../@types/chat';
 // components
@@ -47,10 +48,10 @@ export default function ChatRoomGroup({
         <Scrollbar>
           {participants.map((participant) => (
             <Participant
-              key={participant.id}
+              key={participant.ID}
               participant={participant}
-              open={selectUserId === participant.id}
-              onOpen={() => onOpenUserInfo(participant.id)}
+              open={selectUserId === participant.ID.toString()}
+              onOpen={() => onOpenUserInfo(participant.ID.toString())}
               onClose={() => onOpenUserInfo(null)}
             />
           ))}
@@ -70,7 +71,7 @@ type ParticipantProps = {
 };
 
 function Participant({ participant, open, onClose, onOpen }: ParticipantProps) {
-  const { name, avatar, status, role } = participant;
+  const { name, ProfilePic, active, role } = participant;
 
   return (
     <>
@@ -78,9 +79,9 @@ function Participant({ participant, open, onClose, onOpen }: ParticipantProps) {
         <ListItemAvatar>
           <CustomAvatar
             alt={name}
-            src={avatar}
+            src={`${HOST_API_KEY}/${ ProfilePic}`}
             BadgeProps={{
-              badgeContent: <BadgeStatus status={status} />,
+              badgeContent: <BadgeStatus status={active? "online" : "offline"} />,
             }}
           />
         </ListItemAvatar>

@@ -31,6 +31,7 @@ import { fShortenNumber } from '../../../utils/formatNumber';
 import Image from '../../../components/image';
 import Iconify from '../../../components/iconify';
 import { CustomAvatar, CustomAvatarGroup } from '../../../components/custom-avatar';
+import ProfileComments from './PostComments';
 
 // ----------------------------------------------------------------------
 
@@ -42,15 +43,16 @@ export default function ProfilePostCard({ post }: Props) {
   const { user } = useAuthContext();
   const commentInputRef = useRef<HTMLInputElement>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [type, setType] = useState<'image' | 'video' | null>(post.media_type);
 
   const [isLiked, setLiked] = useState(false);
   const [likes, setLikes] = useState(post.Likes?.length );
 
   const [message, setMessage] = useState('');
+  const [showComment, setShowComment] = useState(false);
 
-  const hasComments = post.Comments.length > 0;
+
+  const hasComments = post.Comments?.length > 0;
   const { enqueueSnackbar } = useSnackbar();
   const [postUser, setPostUser] = useState<any>();
   const [showPicker, setShowPicker] = useState<boolean>(false);
@@ -131,24 +133,9 @@ export default function ProfilePostCard({ post }: Props) {
   }
 
 
-  const handleChangeMessage = (value: string) => {
-    // setMessage(value);
-    // commentInputRef.current?.s = value
-  };
 
-  const handleClickAttach = () => {
-    const { current } = fileInputRef;
-    if (current) {
-      current.click();
-    }
-  };
 
-  const handleClickComment = () => {
-    const { current } = commentInputRef;
-    if (current) {
-      // current.focus();
-    }
-  };
+
   interface PostMediaProps {
     typ: 'image' | 'video' | null;
   }
@@ -173,7 +160,9 @@ export default function ProfilePostCard({ post }: Props) {
     // setEmoji(selectedEmoji);
     setMessage(message + selectedEmoji.emoji)
   };
-
+  const handleClickComment = () => {
+    setShowComment(!showComment)
+  };
   return (
     <Card>
       <CardHeader
@@ -241,85 +230,9 @@ export default function ProfilePostCard({ post }: Props) {
           <Iconify icon="eva:share-fill" />
         </IconButton>
       </Stack>
-
-      {hasComments && (
-        <Stack spacing={1.5} sx={{ px: 3, pb: 2 }}>
-          {post.Comments.map((comment) => (
-            <Stack key={comment.ID} direction="row" spacing={2}>
-              <CustomAvatar alt={comment.username} src={`${HOST_API_KEY}/${ comment?.ProfilePic}`} />
-
-              <Paper
-                sx={{
-                  p: 1.5,
-                  flexGrow: 1,
-                  bgcolor: 'background.neutral',
-                }}
-              >
-                <Stack
-                  justifyContent="space-between"
-                  direction={{ xs: 'column', sm: 'row' }}
-                  alignItems={{ sm: 'center' }}
-                  sx={{ mb: 0.5 }}
-                >
-                  <Typography variant="subtitle2">{comment.username}</Typography>
-
-                  <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-                    {fDate(comment.CreatedAt)}
-                  </Typography>
-                </Stack>
-
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {comment.message}
-                </Typography>
-              </Paper>
-            </Stack>
-          ))}
-        </Stack>
-      )}
-
-      <Stack
-        spacing={2}
-        direction="row"
-        alignItems="center"
-        sx={{
-          p: (theme) => theme.spacing(0, 3, 3, 3),
-        }}
-      >
-        <CustomAvatar src={`${HOST_API_KEY}/${ user?.ProfilePic}`} alt={user?.username} name={user?.username} />
-
-        <InputBase
-          fullWidth
-          // value={message}
-          inputRef={commentInputRef}
-          placeholder="Write a comment…"
-          onChange={(event) => handleChangeMessage(event.target.value)}
-          endAdornment={
-            <InputAdornment position="end" sx={{ mr: 1 }}>
-              {showPicker && (<EmojiPicker style={{bottom:250,left:70,position:"relative",zIndex:10}} theme={"dark" as Theme } lazyLoadEmojis onEmojiClick={handleEmojiSelect}/> )}
-              <IconButton size="small" onClick={handleClickAttach}>
-                <Iconify icon="ic:round-add-photo-alternate" />
-              </IconButton>
-
-              <IconButton size="small" onClick={() => {setShowPicker(!showPicker)}}>
-                <Iconify icon="eva:smiling-face-fill" />
-              </IconButton>
-
-              <IconButton size="small">
-                <Iconify icon="majesticons:send"  onClick={() => {createComment()}}/>
-              </IconButton>
-                
-            </InputAdornment>
-          }
-          sx={{
-            pl: 1.5,
-            height: 40,
-            borderRadius: 1,
-            border: (theme) => `solid 1px ${alpha(theme.palette.grey[500], 0.32)}`,
-          }}
-        />
-
-        <input type="file" ref={fileInputRef} style={{ display: 'none' }} />
-      </Stack>
+     {showComment && <ProfileComments post={post}/>}
+     
+      
     </Card>
   );
 }

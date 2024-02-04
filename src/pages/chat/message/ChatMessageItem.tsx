@@ -1,4 +1,6 @@
 import { formatDistanceToNowStrict } from 'date-fns';
+import { HOST_API_KEY } from 'src/config-global';
+import { useAuthContext } from 'src/auth/useAuthContext';
 // @mui
 import { Avatar, Typography, Stack } from '@mui/material';
 // @types
@@ -17,23 +19,24 @@ type Props = {
 };
 
 export default function ChatMessageItem({ message, conversation, onOpenLightbox }: Props) {
-  const sender = conversation.participants.find(
-    (participant) => participant.id === message.senderId
+  const sender = conversation.Participants.find(
+    (participant) => participant.ID === message.SenderID
   );
+  const { user } = useAuthContext();
 
   const senderDetails =
-    message.senderId === CURRENT_USER_ID
+    message.SenderID === user?.ID
       ? {
           type: 'me',
         }
       : {
-          avatar: sender?.avatar,
+          avatar: `${HOST_API_KEY}/${ sender?.ProfilePic}`,
           name: sender?.name,
         };
 
   const currentUser = senderDetails.type === 'me';
 
-  const isImage = message.contentType === 'image';
+  const isImage = message.ContentType === 'image';
 
   const firstName = senderDetails.name && senderDetails.name.split(' ')[0];
 
@@ -59,7 +62,7 @@ export default function ChatMessageItem({ message, conversation, onOpenLightbox 
           }}
         >
           {!currentUser && `${firstName},`} &nbsp;
-          {formatDistanceToNowStrict(new Date(message.createdAt), {
+          {formatDistanceToNowStrict(new Date(message.CreatedAt), {
             addSuffix: true,
           })}
         </Typography>
@@ -85,8 +88,8 @@ export default function ChatMessageItem({ message, conversation, onOpenLightbox 
           {isImage ? (
             <Image
               alt="attachment"
-              src={message.body}
-              onClick={() => onOpenLightbox(message.body)}
+              src={message.Body}
+              onClick={() => onOpenLightbox(message.Body)}
               sx={{
                 cursor: 'pointer',
                 '&:hover': {
@@ -95,7 +98,7 @@ export default function ChatMessageItem({ message, conversation, onOpenLightbox 
               }}
             />
           ) : (
-            message.body
+            message.Body
           )}
         </Stack>
       </Stack>

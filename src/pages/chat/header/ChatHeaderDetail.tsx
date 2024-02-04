@@ -1,4 +1,5 @@
 // @mui
+import { HOST_API_KEY } from 'src/config-global';
 import { Stack, Box, Link, Typography, IconButton } from '@mui/material';
 // utils
 import { fToNow } from '../../../utils/formatTime';
@@ -16,8 +17,7 @@ type Props = {
 };
 
 export default function ChatHeaderDetail({ participants }: Props) {
-  const isGroup = participants.length > 1;
-
+  const isGroup = participants.length > 2;
   const participantInfo = participants.length ? participants[0] : null;
 
   return (
@@ -32,7 +32,7 @@ export default function ChatHeaderDetail({ participants }: Props) {
         <Stack flexGrow={1}>
           <CustomAvatarGroup max={3}>
             {participants.map((participant) => (
-              <CustomAvatar key={participant.id} alt={participant.name} src={participant.avatar} />
+              <CustomAvatar key={participant.ID.toString()} alt={participant.name} src={`${HOST_API_KEY}/${ participant?.ProfilePic}`} />
             ))}
           </CustomAvatarGroup>
 
@@ -52,10 +52,10 @@ export default function ChatHeaderDetail({ participants }: Props) {
       ) : (
         <Stack flexGrow={1} direction="row" alignItems="center" spacing={2}>
           <CustomAvatar
-            src={participantInfo?.avatar}
+            src={`${HOST_API_KEY}/${ participantInfo?.ProfilePic}` }
             alt={participantInfo?.name}
             BadgeProps={{
-              badgeContent: <BadgeStatus status={participantInfo?.status} />,
+              badgeContent: <BadgeStatus status={participantInfo?.active ? "active" : "unactive"} />,
             }}
           />
 
@@ -63,11 +63,11 @@ export default function ChatHeaderDetail({ participants }: Props) {
             <Typography variant="subtitle2">{participantInfo?.name}</Typography>
 
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {participantInfo?.status === 'offline' ? (
-                participantInfo?.lastActivity && fToNow(participantInfo?.lastActivity)
+              {participantInfo?.active === true ? (
+                participantInfo?.CreatedAt && fToNow(participantInfo?.CreatedAt)
               ) : (
                 <Box component="span" sx={{ textTransform: 'capitalize' }}>
-                  {participantInfo?.status}
+                  {participantInfo?.active ? "active" : "unactive"}
                 </Box>
               )}
             </Typography>

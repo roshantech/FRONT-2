@@ -10,7 +10,7 @@ import axios from '../../../utils/axios';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 // @types
-import { IChatContact, IChatConversationsState } from '../../../@types/chat';
+import { IChatContact, IChatConversation, IChatConversationsState } from '../../../@types/chat';
 // components
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
@@ -47,11 +47,12 @@ const NAV_WIDTH = 320;
 const NAV_COLLAPSE_WIDTH = 96;
 
 type Props = {
-  conversations: IChatConversationsState;
+  conversations: IChatConversation[];
   activeConversationId: string | null;
+  setCurrentConversation :(consersation: IChatConversation) => void,
 };
 
-export default function ChatNav({ conversations, activeConversationId }: Props) {
+export default function ChatNav({ conversations, activeConversationId,setCurrentConversation }: Props) {
   const theme = useTheme();
 
   const navigate = useNavigate();
@@ -150,6 +151,7 @@ export default function ChatNav({ conversations, activeConversationId }: Props) 
             onCloseNav={handleCloseNav}
             conversations={conversations}
             selected={(conversationId: string) => activeConversationId === conversationId}
+            setCurrentConversation={setCurrentConversation}
           />
         ) : (
           <ChatNavSearchResults

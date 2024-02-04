@@ -96,11 +96,11 @@ export default function ChatRoom({ conversation, participants }: Props) {
         />
       )}
 
-      <ChatRoomAttachments
+      {/* <ChatRoomAttachments
         conversation={conversation}
         isCollapse={openAttachments}
         onCollapse={() => setOpenAttachments(!openAttachments)}
-      />
+      /> */}
     </>
   );
 

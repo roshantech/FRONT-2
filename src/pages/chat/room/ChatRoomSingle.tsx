@@ -1,3 +1,4 @@
+import { HOST_API_KEY } from 'src/config-global';
 // @mui
 import { Avatar, Divider, Collapse, Typography, Stack } from '@mui/material';
 // @types
@@ -25,7 +26,7 @@ export default function ChatRoomSingle({ participant, isCollapse, onCollapse }: 
       <Stack alignItems="center" sx={{ py: 4 }}>
         <Avatar
           alt={participant.name}
-          src={participant.avatar}
+          src={`${HOST_API_KEY}/${ participant.ProfilePic}`}
           sx={{ width: 96, height: 96, mb: 2 }}
         />
 
@@ -51,7 +52,7 @@ export default function ChatRoomSingle({ participant, isCollapse, onCollapse }: 
         >
           {[
             { icon: 'eva:pin-fill', value: participant.address },
-            { icon: 'eva:phone-fill', value: participant.phone },
+            { icon: 'eva:phone-fill', value: participant.phone_number },
             { icon: 'eva:email-fill', value: participant.email },
           ].map((row, index) => (
             <Stack key={row.icon} direction="row">

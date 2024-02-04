@@ -52,7 +52,6 @@ const slice = createSlice({
     // GET CONVERSATION
     getConversationSuccess(state, action) {
       const conversation = action.payload;
-
       if (conversation) {
         state.conversations.byId[conversation.id] = conversation;
         state.activeConversationId = conversation.id;
@@ -79,14 +78,14 @@ const slice = createSlice({
         senderId,
       };
 
-      state.conversations.byId[conversationId].messages.push(newMessage);
+      // state.conversations.byId[conversationId].Messages.push(newMessage);
     },
 
     markConversationAsReadSuccess(state, action) {
       const { conversationId } = action.payload;
       const conversation = state.conversations.byId[conversationId];
       if (conversation) {
-        conversation.unreadCount = 0;
+        // conversation.unreadCount = 0;
       }
     },
 

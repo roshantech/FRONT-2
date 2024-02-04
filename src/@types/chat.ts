@@ -28,7 +28,17 @@ export type IChatImageMessage = {
   senderId: string;
 };
 
-export type IChatMessage = IChatTextMessage | IChatImageMessage;
+export type IChatMessage = {
+  ID: number;
+  UpdatedAt: string;
+  DeletedAt: string | null;
+  ConversationID: string;
+  Body: string;
+  ContentType: string;
+  Attachments: any[]; // Change this type accordingly based on the actual structure
+  CreatedAt: string;
+  SenderID: number;
+};
 
 // ----------------------------------------------------------------------
 
@@ -46,24 +56,35 @@ export type IChatContact = {
 };
 
 export type IChatParticipant = {
-  id: string;
-  name: string;
+  ID: number;
+  DeletedAt: string | null;
   username: string;
-  avatar: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  lastActivity?: Date | string | number;
-  status?: 'online' | 'offline' | 'away' | 'busy';
-  role?: string;
+  email: string;
+  education: string;
+  ProfilePic: string;
+  profession: string;
+  address: any;
+  designation: string;
+  role: string;
+  active: boolean;
+  phone_number: string;
+  name: string;
+  about: string;
+  is_verified: boolean;
+  company: string;
+  CreatedAt: string;
+  UpdatedAt: string;
 };
 
 export type IChatConversation = {
-  id: string;
-  participants: IChatParticipant[];
-  type: string;
-  unreadCount: number;
-  messages: IChatMessage[];
+  ID: number;
+  CreatedAt: string;
+  UpdatedAt: string;
+  DeletedAt: string | null;
+  Participants: IChatParticipant[];
+  Type: string;
+  UnreadCount: number;
+  Messages: IChatMessage[];
 };
 
 export type IChatSendMessage = {

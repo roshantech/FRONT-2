@@ -1,6 +1,8 @@
 import { noCase } from 'change-case';
-import { useEffect, useState } from 'react';
+import { useWebsocket } from 'src/useWebsocket';
+import {  useEffect, useState } from 'react';
 import axiosInstance from 'src/utils/axios';
+import { WebSocketContext } from 'src/WebSocketService';
 import { useSnackbar } from 'src/components/snackbar';
 import { useAuthContext } from 'src/auth/useAuthContext';
 // @mui
@@ -34,6 +36,7 @@ import { IconButtonAnimate } from '../../../components/animate';
 interface EaNotification {
   ID?: number; 
   UserID: number;
+  Title: string;
   NotifyMsg: string;
   Status: StatusEnum;
   RecordTimestamp: string;
@@ -43,13 +46,13 @@ type StatusEnum = 'Unread' | 'Read';
 export default function NotificationsPopover() {
   const [openPopover, setOpenPopover] = useState<HTMLElement | null>(null);
   const { user } = useAuthContext();
+  const { socket } = useWebsocket();
 
-  // const [notifications, setNotifications] = useState(_notifications);
 
   const [notifications, setNotifications] = useState<EaNotification[]>([]);
 
   const totalUnRead = notifications !== null ? notifications.filter((item) => item.Status === "Unread").length : 0;
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+  // const [socket, setSocket] = useState<WebSocket | null>(null);
   
   const handleOpenPopover = (event: React.MouseEvent<HTMLElement>) => {
     setOpenPopover(event.currentTarget);
@@ -63,7 +66,7 @@ export default function NotificationsPopover() {
     setNotifications(
       notifications.map((notification) => ({
         ...notification,
-        isUnRead: false,
+        Status: "Read",
       }))
     );
   };
@@ -77,7 +80,7 @@ export default function NotificationsPopover() {
  
   useEffect(() => { 
     axiosInstance
-    .get(`/core/getAllNotifications?Id=${user?.ID}`)
+    .get(`/v1/core/getAllNotifications?Id=${user?.ID}`)
     .then((response) => {
       if(response.data !== null ){
         
@@ -91,29 +94,32 @@ export default function NotificationsPopover() {
 
   useEffect(() => { 
  
-    const newSocket = new WebSocket("ws://localhost:3001/v1/core/ws");
-    setSocket(newSocket)
-    newSocket.addEventListener("open", () => {
+    
+    socket?.addEventListener("open", () => {
       console.log("WebSocket connection established")
     });
-    newSocket.addEventListener("message", (event) => {
+    socket?.addEventListener("message", (event) => {
       console.log("Received message:", JSON.parse(event.data));
-      const data = JSON.parse(event.data) as EaNotification;
-      setNotifications([data,...notifications]);
+      const dat = JSON.parse(event.data) ;
+
+      if(dat.type === "Notification"){
+        const data = JSON.parse(event.data.message) as EaNotification;
+        setNotifications([data,...notifications]);
+      }
     });
 
-    newSocket.addEventListener("error", (error) => {
+    socket?.addEventListener("error", (error) => {
       console.error("WebSocket error:", error);
     });
 
-    newSocket.addEventListener("close", (event) => {
+    socket?.addEventListener("close", (event) => {
       console.log("WebSocket connection closed:", event.code, event.reason);
     });
 
     return () => {
-      newSocket.close();
+      socket?.close();
     };
-  }, [notifications]);
+  }, [notifications, socket, user?.ID]);
 
   return (
     <>
@@ -157,9 +163,9 @@ export default function NotificationsPopover() {
               </ListSubheader>
             }
           >
-            {/* {notifications.slice(0, 2).map((notification) => (
-              <NotificationItem key={notification.ID} notification={notification} />
-            ))} */}
+            {notifications.map((notification) => (
+             notification.Status === "Unread" ?<NotificationItem key={notification.ID} notification={notification} />: null
+            ))}
           </List>
 
           <List
@@ -170,9 +176,9 @@ export default function NotificationsPopover() {
               </ListSubheader>
             }
           >
-            {/* {notifications.slice(2, 5).map((notification) => (
-              <NotificationItem key={notification.ID} notification={notification} />
-            ))} */}
+          {notifications.map((notification) => (
+             notification.Status === "Read" ?<NotificationItem key={notification.ID} notification={notification} />: null
+            ))}
           </List>
         </Scrollbar>
 
@@ -200,7 +206,7 @@ type NotificationItemProps = {
   isUnRead: boolean;
 };
 
-function NotificationItem({ notification }: { notification: NotificationItemProps }) {
+function NotificationItem({ notification }: { notification: EaNotification }) {
   const { avatar, title } = renderContent(notification);
 
   return (
@@ -209,7 +215,7 @@ function NotificationItem({ notification }: { notification: NotificationItemProp
         py: 1.5,
         px: 2.5,
         mt: '1px',
-        ...(notification.isUnRead && {
+        ...(notification.Status === "Unread" && {
           bgcolor: 'action.selected',
         }),
       }}
@@ -224,7 +230,7 @@ function NotificationItem({ notification }: { notification: NotificationItemProp
         secondary={
           <Stack direction="row" sx={{ mt: 0.5, typography: 'caption', color: 'text.disabled' }}>
             <Iconify icon="eva:clock-fill" width={16} sx={{ mr: 0.5 }} />
-            <Typography variant="caption">{fToNow(notification.createdAt)}</Typography>
+            <Typography variant="caption">{fToNow(notification.RecordTimestamp)}</Typography>
           </Stack>
         }
       />
@@ -234,42 +240,42 @@ function NotificationItem({ notification }: { notification: NotificationItemProp
 
 // ----------------------------------------------------------------------
 
-function renderContent(notification: NotificationItemProps) {
+function renderContent(notification: EaNotification) {
   const title = (
     <Typography variant="subtitle2">
-      {notification.title}
+      {notification.Title}
       <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
-        &nbsp; {noCase(notification.description)}
+        &nbsp; {noCase(notification.NotifyMsg)}
       </Typography>
     </Typography>
   );
 
-  if (notification.type === 'order_placed') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/notification/ic_package.svg" />,
-      title,
-    };
-  }
-  if (notification.type === 'order_shipped') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/notification/ic_shipping.svg" />,
-      title,
-    };
-  }
-  if (notification.type === 'mail') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/notification/ic_mail.svg" />,
-      title,
-    };
-  }
-  if (notification.type === 'chat_message') {
-    return {
-      avatar: <img alt={notification.title} src="/assets/icons/notification/ic_chat.svg" />,
-      title,
-    };
-  }
+  // if (notification.type === 'order_placed') {
+  //   return {
+  //     avatar: <img alt={notification.title} src="/assets/icons/notification/ic_package.svg" />,
+  //     title,
+  //   };
+  // }
+  // if (notification.type === 'order_shipped') {
+  //   return {
+  //     avatar: <img alt={notification.title} src="/assets/icons/notification/ic_shipping.svg" />,
+  //     title,
+  //   };
+  // }
+  // if (notification.type === 'mail') {
+  //   return {
+  //     avatar: <img alt={notification.title} src="/assets/icons/notification/ic_mail.svg" />,
+  //     title,
+  //   };
+  // }
+  // if (notification.type === 'chat_message') {
+  //   return {
+  //     avatar: <img alt={notification.title} src="/assets/icons/notification/ic_chat.svg" />,
+  //     title,
+  //   };
+  // }
   return {
-    avatar: notification.avatar ? <img alt={notification.title} src={notification.avatar} /> : null,
+    avatar:  null,
     title,
   };
 }

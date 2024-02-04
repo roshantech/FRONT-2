@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useAuthContext } from 'src/auth/useAuthContext';
 // @mui
 import { Stack, InputBase, InputBaseProps, IconButton, InputAdornment } from '@mui/material';
 // utils
@@ -10,7 +11,6 @@ import Iconify from '../../../components/iconify';
 
 // ----------------------------------------------------------------------
 
-const CURRENT_USER_ID = '8864c717-587d-472a-929a-8e5f298024da-0';
 
 interface Props extends InputBaseProps {
   conversationId: string | null;
@@ -25,6 +25,7 @@ export default function ChatMessageInput({
   ...other
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuthContext();
 
   const [message, setMessage] = useState('');
 
@@ -42,7 +43,7 @@ export default function ChatMessageInput({
           contentType: 'text',
           attachments: [],
           createdAt: new Date(),
-          senderId: CURRENT_USER_ID,
+          senderId: user?.ID,
         });
       }
       setMessage('');
@@ -64,8 +65,8 @@ export default function ChatMessageInput({
           </InputAdornment>
         }
         endAdornment={
-          <Stack direction="row" spacing={1} sx={{ flexShrink: 0, mr: 1.5 }}>
-            <IconButton disabled={disabled} size="small" onClick={handleClickAttach}>
+          <Stack direction="row" spacing={1} sx={{ mr: 1.5 }}>
+            <IconButton disabled={disabled} size="small" sx={{cursor:"pointer"}} onClick={handleClickAttach}>
               <Iconify icon="ic:round-add-photo-alternate" />
             </IconButton>
 
@@ -88,7 +89,7 @@ export default function ChatMessageInput({
         {...other}
       />
 
-      <input type="file" ref={fileInputRef} style={{ display: 'none' }} />
+      <input type="file" ref={fileInputRef}   style={{ display: 'none' }} />
     </>
   );
 }

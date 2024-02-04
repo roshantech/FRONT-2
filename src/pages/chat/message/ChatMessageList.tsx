@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
+import { useWebsocket } from 'src/useWebsocket';
 // @types
-import { IChatConversation } from '../../../@types/chat';
+import { IChatConversation, IChatMessage } from '../../../@types/chat';
 //
 import Scrollbar from '../../../components/scrollbar';
 import Lightbox from '../../../components/lightbox';
@@ -11,25 +12,38 @@ import ChatMessageItem from './ChatMessageItem';
 
 type Props = {
   conversation: IChatConversation;
+  setCurrentConversation:(consersation: IChatConversation) => void,
 };
 
-export default function ChatMessageList({ conversation }: Props) {
+export default function ChatMessageList({ conversation,setCurrentConversation }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [selectedImage, setSelectedImage] = useState<number>(-1);
+  const { socket } = useWebsocket()
+
 
   useEffect(() => {
+    socket?.addEventListener("message", (event) => {
+      console.log("Received message:", JSON.parse(event.data));
+      const dat = JSON.parse(event.data) ;
+      if(dat.Type === "ChatMessage"){
+        const newConv = {...conversation}
+        newConv.Messages = [...newConv.Messages , dat.Message as IChatMessage]
+        setCurrentConversation(newConv)
+      }
+    });
+
     const scrollMessagesToBottom = () => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
     };
     scrollMessagesToBottom();
-  }, [conversation.messages]);
+  }, [conversation, setCurrentConversation, socket]);
 
-  const imagesLightbox = conversation.messages
-    .filter((messages) => messages.contentType === 'image')
-    .map((messages) => ({ src: messages.body }));
+  const imagesLightbox = conversation.Messages
+    .filter((messages) => messages.ContentType === 'image')
+    .map((messages) => ({ src: messages.Body }));
 
   const handleOpenLightbox = (imageUrl: string) => {
     const imageIndex = imagesLightbox.findIndex((image) => image.src === imageUrl);
@@ -39,6 +53,7 @@ export default function ChatMessageList({ conversation }: Props) {
   const handleCloseLightbox = () => {
     setSelectedImage(-1);
   };
+  
 
   return (
     <>
@@ -48,12 +63,12 @@ export default function ChatMessageList({ conversation }: Props) {
         }}
         sx={{ p: 3, height: 1 }}
       >
-        {conversation.messages.map((message) => (
+        {conversation.Messages?.map((message) => (
           <ChatMessageItem
-            key={message.id}
+            key={message.ID}
             message={message}
             conversation={conversation}
-            onOpenLightbox={() => handleOpenLightbox(message.body)}
+            onOpenLightbox={() => handleOpenLightbox(message.Body)}
           />
         ))}
       </Scrollbar>

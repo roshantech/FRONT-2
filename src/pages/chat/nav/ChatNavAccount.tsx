@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { HOST_API_KEY } from 'src/config-global';
 // @mui
 import {
   List,
@@ -40,9 +41,9 @@ export default function ChatNavAccount() {
   return (
     <>
       <CustomAvatar
-        src={user?.photoURL}
-        alt={user?.displayName}
-        name={user?.displayName}
+        src={`${HOST_API_KEY}/${ user?.ProfilePic}`}
+        alt={user?.username}
+        name={user?.username}
         BadgeProps={{
           badgeContent: <BadgeStatus status={status} />,
         }}
@@ -54,7 +55,7 @@ export default function ChatNavAccount() {
         <Stack direction="row" alignItems="center" spacing={2} sx={{ py: 2, pr: 1, pl: 2.5 }}>
           <div>
             <Typography noWrap variant="subtitle2">
-              {user?.displayName}
+              {user?.username}
             </Typography>
 
             <Typography noWrap variant="body2" sx={{ color: 'text.secondary' }}>

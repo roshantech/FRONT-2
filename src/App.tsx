@@ -12,6 +12,8 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 // routes
+import { Provider as ReduxProvider } from 'react-redux';
+
 import Router from './routes';
 // theme
 import ThemeProvider from './theme';
@@ -27,13 +29,18 @@ import { ThemeSettings, SettingsProvider } from './components/settings';
 // https://docs.minimals.cc/authentication/ts-version
 
 import { AuthProvider } from './auth/JwtContext';
+import { store } from './redux/store';
+import { WebSocketProvider } from './WebSocketService';
 
 // ----------------------------------------------------------------------
 
 export default function App() {
   return (
     <AuthProvider>
+      <WebSocketProvider>
       <HelmetProvider>
+        <ReduxProvider store={store}>
+
         <SettingsProvider>
           <BrowserRouter>
             <ScrollToTop />
@@ -50,7 +57,10 @@ export default function App() {
             </MotionLazyContainer>
           </BrowserRouter>
         </SettingsProvider>
+        </ReduxProvider>
+
       </HelmetProvider>
+      </WebSocketProvider>
     </AuthProvider>
   );
 }

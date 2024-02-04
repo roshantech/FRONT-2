@@ -47,7 +47,7 @@ export default function UserProfilePage() {
       value: 'followers',
       label: 'Followers',
       icon: <Iconify icon="eva:heart-fill" />,
-      component: <ProfileFollowers followers={_userFollowers} />,
+      component: <ProfileFollowers  />,
     },
     {
       value: 'friends',

@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default function ChatRoomAttachments({ conversation, isCollapse, onCollapse }: Props) {
-  const totalAttachments = uniq(flatten(conversation.messages.map((item) => item.attachments)));
+  const totalAttachments = uniq(flatten(conversation.Messages.map((item) => item.Attachments)));
 
   return (
     <Stack

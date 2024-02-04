@@ -1,4 +1,6 @@
 import { formatDistanceToNowStrict } from 'date-fns';
+import { useAuthContext } from 'src/auth/useAuthContext';
+import { HOST_API_KEY } from 'src/config-global';
 // @mui
 import {
   Badge,
@@ -26,16 +28,17 @@ type Props = {
 };
 
 export default function ChatNavItem({ conversation, openNav, isSelected, onSelect }: Props) {
-  const details = getDetails(conversation, CURRENT_USER_ID);
+  const { user } = useAuthContext();
 
-  const lastActivity = conversation.messages[conversation.messages.length - 1].createdAt;
+  const details = getDetails(conversation, user?.ID);
+  console.log(details)
+  const lastActivity = conversation.Messages[conversation.Messages.length - 1].CreatedAt;
 
   const isGroup = details.otherParticipants.length > 1;
-
-  const isUnread = conversation.unreadCount > 0;
+  const isUnread = conversation.UnreadCount > 0;
 
   const hasOnlineInGroup =
-    isGroup && details.otherParticipants.map((item) => item.status).includes('online');
+    isGroup && details.otherParticipants.map((item : any) => item.status).includes('online');
 
   return (
     <ListItemButton
@@ -59,20 +62,20 @@ export default function ChatNavItem({ conversation, openNav, isSelected, onSelec
             <CustomAvatarGroup compact sx={{ width: 48, height: 48 }}>
               {details.otherParticipants.slice(0, 2).map((participant) => (
                 <CustomAvatar
-                  key={participant.id}
-                  alt={participant.name}
-                  src={participant.avatar}
+                  key={participant.ID.toString()}
+                  alt={participant.username}
+                  src={`${HOST_API_KEY}/${ participant.ProfilePic}`  }
                 />
               ))}
             </CustomAvatarGroup>
           </Badge>
         ) : (
           <CustomAvatar
-            key={details.otherParticipants[0].id}
-            alt={details.otherParticipants[0].name}
-            src={details.otherParticipants[0].avatar}
+            key={details.otherParticipants[0].ID.toString()}
+            alt={details.otherParticipants[0].username}
+            src={`${HOST_API_KEY}/${ details.otherParticipants[0].ProfilePic}` }
             BadgeProps={{
-              badgeContent: <BadgeStatus status={details.otherParticipants[0].status} />,
+              badgeContent: <BadgeStatus status={details.otherParticipants[0].active? "active" : "unactive"} />,
             }}
             sx={{ width: 48, height: 48 }}
           />
@@ -119,21 +122,24 @@ export default function ChatNavItem({ conversation, openNav, isSelected, onSelec
 // ----------------------------------------------------------------------
 
 const getDetails = (conversation: IChatConversation, currentUserId: string) => {
-  const otherParticipants = conversation.participants.filter(
-    (participant) => participant.id !== currentUserId
+  const otherParticipants = conversation.Participants.filter(
+    (participant) => participant.ID.toString() !== currentUserId.toString()
   );
 
-  const displayNames = otherParticipants.map((participant) => participant.name).join(', ');
+  const displayNames = otherParticipants.map((participant) => participant.username).join(', ');
 
   let displayText = '';
+  if(conversation.Messages?.length !== 0){
+    const lastMessage = conversation.Messages[conversation.Messages.length - 1];
 
-  const lastMessage = conversation.messages[conversation.messages.length - 1];
-  if (lastMessage) {
-    const sender = lastMessage.senderId === currentUserId ? 'You: ' : '';
-
-    const message = lastMessage.contentType === 'image' ? 'Sent a photo' : lastMessage.body;
-
-    displayText = `${sender}${message}`;
+    if (lastMessage) {
+      const sender = lastMessage.SenderID.toString() === currentUserId ? 'You: ' : '';
+      
+      const message = lastMessage.ContentType === 'image' ? 'Sent a photo' : lastMessage.Body;
+      
+      displayText = `${sender}${message}`;
+    }
   }
+  
   return { otherParticipants, displayNames, displayText };
 };
